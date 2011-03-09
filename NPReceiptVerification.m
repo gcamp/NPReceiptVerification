@@ -211,16 +211,16 @@ static NSString * const kReceiptHashKey = @"Hash";
 		if([name isEqualToString:certName]) {
 			CSSM_DATA certData;
 			status = SecCertificateGetData((SecCertificateRef)itemRef, &certData);
-			if(status) {
-				if(itemRef) CFRelease(itemRef);
-			}
+            if (itemRef) 
+                CFRelease(itemRef);
 			
-			resultData = [NSData dataWithBytes:certData.Data length:certData.Length];
-			
-			SecKeychainItemFreeContent(&list, NULL);
-			if(itemRef) CFRelease(itemRef);
+            if (!status) {
+                resultData = [NSData dataWithBytes:certData.Data length:certData.Length];
+            }
 		}
-		
+		SecKeychainItemFreeContent(&list, NULL);
+        if(itemRef) 
+            CFRelease(itemRef);
         [name release];
 	}
 	CFRelease(searchList);
