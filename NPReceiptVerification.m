@@ -211,8 +211,6 @@ static NSString * const kReceiptHashKey = @"Hash";
 		if([name isEqualToString:certName]) {
 			CSSM_DATA certData;
 			status = SecCertificateGetData((SecCertificateRef)itemRef, &certData);
-            if (itemRef) 
-                CFRelease(itemRef);
 			
             if (!status) {
                 resultData = [NSData dataWithBytes:certData.Data length:certData.Length];
