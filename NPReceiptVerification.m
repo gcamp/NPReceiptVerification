@@ -23,6 +23,7 @@
 //	THE SOFTWARE.
 //
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #import "NPReceiptVerification.h"
 
 #import <IOKit/IOKitLib.h>
@@ -46,8 +47,7 @@
 @end
 
 //These need to be defined for each application and version
-static NSString * const kReceiptBundleVersion = @"1.0";
-static NSString * const kReceiptBundleIdentifier = @"com.sample.ReceiptVerification";
+static NSString * const kReceiptBundleIdentifier = @"com.guillaumecampagna.timebutler";
 
 
 static NSString * const kReceiptBundleIdentiferKey = @"BundleIdentifier";
@@ -59,84 +59,74 @@ static NSString * const kReceiptHashKey = @"Hash";
 @implementation NPReceiptVerification
 
 + (void)load {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
-	NSBundle *appBundle = [NSBundle mainBundle];
-	NSString *appPath = [appBundle bundlePath];
-	NSString *masReceiptPath = [[[appPath stringByAppendingPathComponent:@"Contents"] stringByAppendingPathComponent:@"_MASReceipt"] stringByAppendingPathComponent:@"receipt"];
-	
-	
-	//If the receipt file doesn't exist...
-	if (![[NSFileManager defaultManager] fileExistsAtPath:masReceiptPath]) {
-		exit(173);
-		pool = (NSAutoreleasePool *)1;
-	}
-	
-	//Verify code signing identity is something Apple
-	SecStaticCodeRef staticCode = NULL;
-    SecRequirementRef req = NULL;
-	
-	char thea = 'a';
-	char theSpace = ' ';
-	char thec = 'c';
-	char thel = 'l';
-	char theh = 'h';
-	char ther = 'r';
-	char thep = 'p';
-	char theo = 'o';
-	char then = 'n';
-	char thee = 'e';
-	
-	NSString *anchorString = [NSString stringWithFormat:@"%5$c%9$c%1$c%8$c%6$c%10$c%3$c%5$c%2$c%2$c%7$c%4$c",
-							  thec, thep, theSpace, thee, thea, theo, thel, theh, then, ther];
-	anchorString = [anchorString stringByAppendingString:@" generic"];
-	
-    OSStatus status = SecStaticCodeCreateWithPath((CFURLRef)[NSURL fileURLWithPath:appPath], kSecCSDefaultFlags, &staticCode);
-    status = SecRequirementCreateWithString((CFStringRef)anchorString, kSecCSDefaultFlags, &req);
-    status = SecStaticCodeCheckValidity(staticCode, kSecCSDefaultFlags, req);
-	
-	if(status != noErr) {
-		exit(173);
-		pool = (NSAutoreleasePool *)1;
-	}
-	
-	//Verify MAS Receipt
-	NSDictionary *receiptDict = [[self class] appStoreReceiptDictionaryForFile:masReceiptPath];
-	
-	if(receiptDict == nil) {
-		exit(173);
-		pool = (NSAutoreleasePool *)1;
-	}
-	
-	
-	NSData *guidData = [[self class] systemMACAddress];
-	if (guidData == nil) {
-		exit(173);
-		pool = (NSAutoreleasePool *)1;
-	}
-	
-	NSAssert([kReceiptBundleVersion isEqualToString:[appBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"]], 
-			 @"CFBundleShortVersionString must match hardcoded version number!");
-	NSAssert([kReceiptBundleIdentifier isEqualToString:[appBundle bundleIdentifier]], 
-			 @"Bundle identifier must match hardcoded bundle identifier");
-	
-	NSMutableData *input = [NSMutableData data];
-	[input appendData:guidData];
-	[input appendData:[receiptDict objectForKey:kReceiptOpaqueValueKey]];
-	[input appendData:[receiptDict objectForKey:kReceiptBundleIdentiferDataKey]];
-	
-	NSMutableData *hash = [NSMutableData dataWithLength:SHA_DIGEST_LENGTH];
-	SHA1([input bytes], [input length], [hash mutableBytes]);
-	
-	if (!([kReceiptBundleIdentifier isEqualToString:[receiptDict objectForKey:kReceiptBundleIdentiferKey]] &&
-		[kReceiptBundleVersion isEqualToString:[receiptDict objectForKey:kReceiptVersionKey]] &&
-		[hash isEqualToData:[receiptDict objectForKey:kReceiptHashKey]]) )
-	{
-		exit(173);
-		pool = (NSAutoreleasePool *)1;
-	}
-
-	[pool release];
+    @autoreleasepool {
+        NSBundle *appBundle = [NSBundle mainBundle];
+        NSString *appPath = [appBundle bundlePath];
+        NSString *masReceiptPath = [[[appPath stringByAppendingPathComponent:@"Contents"] stringByAppendingPathComponent:@"_MASReceipt"] stringByAppendingPathComponent:@"receipt"];
+        
+        
+        //If the receipt file doesn't exist...
+        if (![[NSFileManager defaultManager] fileExistsAtPath:masReceiptPath]) {
+            exit(173);
+        }
+        
+        //Verify code signing identity is something Apple
+        SecStaticCodeRef staticCode = NULL;
+        SecRequirementRef req = NULL;
+        
+        char thea = 'a';
+        char theSpace = ' ';
+        char thec = 'c';
+        char thel = 'l';
+        char theh = 'h';
+        char ther = 'r';
+        char thep = 'p';
+        char theo = 'o';
+        char then = 'n';
+        char thee = 'e';
+        
+        NSString *anchorString = [NSString stringWithFormat:@"%5$c%9$c%1$c%8$c%6$c%10$c%3$c%5$c%2$c%2$c%7$c%4$c",
+                                  thec, thep, theSpace, thee, thea, theo, thel, theh, then, ther];
+        anchorString = [anchorString stringByAppendingString:@" generic"];
+        
+        OSStatus status = SecStaticCodeCreateWithPath((CFURLRef)[NSURL fileURLWithPath:appPath], kSecCSDefaultFlags, &staticCode);
+        status = SecRequirementCreateWithString((CFStringRef)anchorString, kSecCSDefaultFlags, &req);
+        status = SecStaticCodeCheckValidity(staticCode, kSecCSDefaultFlags, req);
+        
+        if(status != noErr) {
+            exit(173);
+        }
+        
+        //Verify MAS Receipt
+        NSDictionary *receiptDict = [[self class] appStoreReceiptDictionaryForFile:masReceiptPath];
+        
+        if(receiptDict == nil) {
+            exit(173);
+        }
+        
+        
+        NSData *guidData = [[self class] systemMACAddress];
+        if (guidData == nil) {
+            exit(173);
+        }
+        
+        NSAssert([kReceiptBundleIdentifier isEqualToString:[appBundle bundleIdentifier]], 
+                 @"Bundle identifier must match hardcoded bundle identifier");
+        
+        NSMutableData *input = [NSMutableData data];
+        [input appendData:guidData];
+        [input appendData:[receiptDict objectForKey:kReceiptOpaqueValueKey]];
+        [input appendData:[receiptDict objectForKey:kReceiptBundleIdentiferDataKey]];
+        
+        NSMutableData *hash = [NSMutableData dataWithLength:SHA_DIGEST_LENGTH];
+        SHA1([input bytes], [input length], [hash mutableBytes]);
+        
+        if (!([kReceiptBundleIdentifier isEqualToString:[receiptDict objectForKey:kReceiptBundleIdentiferKey]] &&
+              [hash isEqualToData:[receiptDict objectForKey:kReceiptHashKey]]) )
+        {
+            exit(173);
+        }
+    }
 }
 
 + (NSData *)appleRootCertificateData {
@@ -471,3 +461,5 @@ static NSString * const kReceiptHashKey = @"Hash";
 }
 
 @end
+
+#pragma GCC diagnostic warning "-Wdeprecated-declarations"
