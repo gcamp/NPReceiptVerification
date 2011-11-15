@@ -23,6 +23,7 @@
 //	THE SOFTWARE.
 //
 
+#if !DEBUG
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #import "NPReceiptVerification.h"
 
@@ -463,3 +464,4 @@ static NSString * const kReceiptHashKey = @"Hash";
 @end
 
 #pragma GCC diagnostic warning "-Wdeprecated-declarations"
+#endif
